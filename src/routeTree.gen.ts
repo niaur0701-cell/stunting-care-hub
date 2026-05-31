@@ -9,38 +9,161 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TentangRouteImport } from './routes/tentang'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as EdukasiRouteImport } from './routes/edukasi'
+import { Route as DataWilayahRouteImport } from './routes/data-wilayah'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EdukasiSlugRouteImport } from './routes/edukasi.$slug'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 
+const TentangRoute = TentangRouteImport.update({
+  id: '/tentang',
+  path: '/tentang',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EdukasiRoute = EdukasiRouteImport.update({
+  id: '/edukasi',
+  path: '/edukasi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataWilayahRoute = DataWilayahRouteImport.update({
+  id: '/data-wilayah',
+  path: '/data-wilayah',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EdukasiSlugRoute = EdukasiSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => EdukasiRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/data-wilayah': typeof DataWilayahRoute
+  '/edukasi': typeof EdukasiRouteWithChildren
+  '/login': typeof LoginRoute
+  '/tentang': typeof TentangRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/edukasi/$slug': typeof EdukasiSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/data-wilayah': typeof DataWilayahRoute
+  '/edukasi': typeof EdukasiRouteWithChildren
+  '/login': typeof LoginRoute
+  '/tentang': typeof TentangRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/edukasi/$slug': typeof EdukasiSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/data-wilayah': typeof DataWilayahRoute
+  '/edukasi': typeof EdukasiRouteWithChildren
+  '/login': typeof LoginRoute
+  '/tentang': typeof TentangRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/edukasi/$slug': typeof EdukasiSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/data-wilayah'
+    | '/edukasi'
+    | '/login'
+    | '/tentang'
+    | '/admin'
+    | '/edukasi/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/data-wilayah'
+    | '/edukasi'
+    | '/login'
+    | '/tentang'
+    | '/admin'
+    | '/edukasi/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/data-wilayah'
+    | '/edukasi'
+    | '/login'
+    | '/tentang'
+    | '/_authenticated/admin'
+    | '/edukasi/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  DataWilayahRoute: typeof DataWilayahRoute
+  EdukasiRoute: typeof EdukasiRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  TentangRoute: typeof TentangRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tentang': {
+      id: '/tentang'
+      path: '/tentang'
+      fullPath: '/tentang'
+      preLoaderRoute: typeof TentangRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/edukasi': {
+      id: '/edukasi'
+      path: '/edukasi'
+      fullPath: '/edukasi'
+      preLoaderRoute: typeof EdukasiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data-wilayah': {
+      id: '/data-wilayah'
+      path: '/data-wilayah'
+      fullPath: '/data-wilayah'
+      preLoaderRoute: typeof DataWilayahRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +171,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/edukasi/$slug': {
+      id: '/edukasi/$slug'
+      path: '/$slug'
+      fullPath: '/edukasi/$slug'
+      preLoaderRoute: typeof EdukasiSlugRouteImport
+      parentRoute: typeof EdukasiRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
+interface EdukasiRouteChildren {
+  EdukasiSlugRoute: typeof EdukasiSlugRoute
+}
+
+const EdukasiRouteChildren: EdukasiRouteChildren = {
+  EdukasiSlugRoute: EdukasiSlugRoute,
+}
+
+const EdukasiRouteWithChildren =
+  EdukasiRoute._addFileChildren(EdukasiRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  DataWilayahRoute: DataWilayahRoute,
+  EdukasiRoute: EdukasiRouteWithChildren,
+  LoginRoute: LoginRoute,
+  TentangRoute: TentangRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
