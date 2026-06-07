@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Informasi Geografis Stunting - Pasarwajo 2025</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet.js (Peta Digital) CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #dashboardMap { height: 350px; width: 100%; z-index: 10; }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen flex flex-col justify-between">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <!-- SIDEBAR MENU UTAMA -->
+        <nav class="w-full md:w-72 bg-slate-900 text-white p-6 shadow-xl flex flex-col justify-between">
+            <div>
+                <h1 class="text-xl font-extrabold tracking-wider text-blue-400 border-b border-slate-700 pb-4 mb-6 uppercase">
+                    SIG STUNTING 2025
+                </h1>
+                
+                <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Menu Utama</h2>
+                <ul class="space-y-2">
+                    <li>
+                        <a href="data-stunting.html" class="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-semibold">
+                            <span class="text-blue-500">📊</span> 1. Data Stunting
+                        </a>
+                    </li>
+                    <li>
+                        <a href="data-faktor-risiko.html" class="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-semibold">
+                            <span class="text-amber-500">⚠️</span> 2. Data Faktor Risiko
+                        </a>
+                    </li>
+                    <li>
+                        <a href="data-wilayah.html" class="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-semibold">
+                            <span class="text-emerald-500">🗺️</span> 3. Data Wilayah
+                        </a>
+                    </li>
+                    <li>
+                        <a href="analisis-faktor-risiko.html" class="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-semibold">
+                            <span class="text-purple-500">📈</span> 4. Analisis Faktor Risiko
+                        </a>
+                    </li>
+                    <li>
+                        <a href="peta-sebaran.html" class="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-semibold">
+                            <span class="text-red-500">📍</span> 5. Peta Sebaran Stunting
+                        </a>
+                    </li>
+                    <li>
+                        <a href="peta-wilayah-prioritas.html" class="flex items-center gap-3 p-3 rounded-xl text-slate-300 hover:bg-slate-800 transition text-sm font-semibold">
+                            <span class="text-rose-500">🚨</span> 6. Peta Wilayah Prioritas
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Bagian Logout / Admin Profil -->
+            <div class="mt-8 pt-4 border-t border-slate-800">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white shadow-md">AD</div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-200">Admin Utama SIG</p>
+                        <p class="text-[10px] text-slate-500 font-semibold uppercase">Kec. Pasarwajo</p>
+                    </div>
+                </div>
+                <a href="index.html" class="block w-full text-center bg-red-600/25 hover:bg-red-600 text-red-400 hover:text-white text-xs font-bold py-2.5 rounded-lg uppercase tracking-wider transition border border-red-500/30">
+                    Logout
+                </a>
+            </div>
+        </nav>
+
+        <!-- AREA KONTEN UTAMA -->
+        <main class="flex-1 p-6 md:p-8 space-y-8">
+            <!-- Header Atas -->
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">Dashboard Analitik Terpadu</h2>
+                    <p class="text-sm text-slate-500 font-semibold mt-0.5">Kecamatan Pasarwajo, Kabupaten Buton • Pemantauan Tahun 2025</p>
+                </div>
+                <div class="bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm">
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-ping"></span>
+                    <span>Database Sinkronisasi Aktif</span>
+                </div>
+            </header>
+
+            <!-- GRID STATISTIK DINAMIS (LIVE DARI LOCAL STORAGE) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Card 1: Total Desa/Kelurahan -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="p-3.5 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xl">🗺️</div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wide">Total Wilayah</p>
+                        <p id="statTotalWilayah" class="text-2xl font-black text-slate-800 mt-0.5">0</p>
+                        <p class="text-[10px] text-emerald-600 font-bold mt-1">Desa & Kelurahan</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Status Kasus (Rata-rata Prevalensi) -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="p-3.5 bg-blue-50 text-blue-600 rounded-xl font-bold text-xl">📊</div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wide">Prevalensi Rata-Rata</p>
+                        <p id="statPrevalensi" class="text-2xl font-black text-slate-800 mt-0.5">0%</p>
+                        <p class="text-[10px] text-slate-400 font-bold mt-1">Dari seluruh wilayah</p>
+                    </div>
+                </div>
+
+                <!-- Card 3: Total Faktor Risiko Sanitasi -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="p-3.5 bg-amber-50 text-amber-600 rounded-xl font-bold text-xl">⚠️</div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wide">Risiko Sanitasi</p>
+                        <p id="statFaktorRisiko" class="text-2xl font-black text-slate-800 mt-0.5">0 KK</p>
+                        <p class="text-[10px] text-amber-600 font-bold mt-1">Sanitasi bermasalah</p>
+                    </div>
+                </div>
+
+                <!-- Card 4: Wilayah Prioritas Utama -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div class="p-3.5 bg-red-50 text-red-600 rounded-xl font-bold text-xl">🚨</div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wide">Prioritas Utama</p>
+                        <p id="statPrioritas" class="text-2xl font-black text-slate-800 mt-0.5">0</p>
+                        <p class="text-[10px] text-red-600 font-bold mt-1">Butuh intervensi cepat</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LAYOUT GRAFIS & PETA GEOGRAFIS -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Kolom Kiri: Peta Geografis Interaktif Pasarwajo (Lebar 2 Kolom) -->
+                <section class="lg:col-span-2 bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden flex flex-col justify-between">
+                    <div class="p-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold uppercase text-slate-700 tracking-wider">Visualisasi Geografis Sebaran Spasial (GIS)</h3>
+                            <p class="text-xs text-slate-400 font-medium mt-0.5">Klik marker wilayah untuk melihat prevalensi kasus stunting 2025</p>
+                        </div>
+                    </div>
+                    <!-- Wadah Peta Realistis Leaflet.js -->
+                    <div id="dashboardMap"></div>
+                </section>
+
+                <!-- Kolom Kanan: Daftar Urutan Prioritas Kerawanan -->
+                <section class="bg-white p-5 rounded-2xl shadow-md border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold uppercase text-slate-700 tracking-wider border-b pb-3 mb-4">Zona Prioritas Intervensi</h3>
+                        <div id="prioritasList" class="space-y-3 max-h-[290px] overflow-y-auto pr-1">
+                            <!-- Diisi dinamis oleh JavaScript -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- GRAFIK SEBARAN KASUS (CHART.JS) -->
+            <section class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+                <div class="mb-4">
+                    <h3 class="text-sm font-bold uppercase text-slate-700 tracking-wider">Grafik Perbandingan Prevalensi Stunting (%) per Wilayah</h3>
+                    <p class="text-xs text-slate-400 font-medium mt-0.5">Urutan desa/kelurahan berdasarkan tingkat prevalensi gizi buruk tahun 2025</p>
+                </div>
+                <div class="w-full h-80">
+                    <canvas id="stuntingChart"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- BAWAH: FOOTER -->
+    <footer class="w-full text-center py-4 text-slate-500 text-xs bg-slate-200/50 border-t border-slate-200">
+        &copy; 2025 SIG Stunting Kabupaten Buton. All rights reserved.
+    </footer>
+
+    <!-- LOGIK JAVASCRIPT: LIVE SYNC, MAPS & CHARTS -->
+    <script>
+        // 1. Koordinat Pusat Geografis untuk Masing-masing Desa/Kelurahan di Pasarwajo
+        const koordinatDesa = {
+            "Lapodi": [-5.424, 122.825],
+            "Desa Lapodi": [-5.424, 122.825],
+            "Saragi": [-5.445, 122.815],
+            "Desa Saragi": [-5.445, 122.815],
+            "Warinta": [-5.465, 122.785],
+            "Desa Warinta": [-5.465, 122.785],
+            "Mantowu": [-5.410, 122.830],
+            "Desa Mantowu": [-5.410, 122.830],
+            "Wakoko": [-5.495, 122.805],
+            "Kel. Wakoko": [-5.495, 122.805],
+            "Wasaga": [-5.475, 122.840],
+            "Kel. Wasaga": [-5.475, 122.840],
+            "Winning": [-5.435, 122.795],
+            "Desa Winning": [-5.435, 122.795],
+            "Kabawakole": [-5.455, 122.810],
+            "Desa Kabawakole": [-5.455, 122.810],
+            "Kaongkeongkea": [-5.490, 122.820],
+            "Desa Kaongkeongkea": [-5.490, 122.820],
+            "Kancinaa": [-5.460, 122.800],
+            "Desa Kancinaa": [-5.460, 122.800],
+            "Waangguanggu": [-5.405, 122.790],
+            "Desa Waangguanggu": [-5.405, 122.790],
+            "Kombeli": [-5.480, 122.835],
+            "Kel. Kombeli": [-5.480, 122.835],
+            "Dongkala": [-5.500, 122.830],
+            "Kel. Takimpo": [-5.430, 122.845],
+            "Kel. Pasarwajo": [-5.485, 122.825],
+            "Desa Laburunci": [-5.470, 122.830],
+            "Desa Sampuabalo": [-5.415, 122.798],
+            "Desa Megabahari": [-5.400, 122.780]
+        };
+
+        // 2. Data Cadangan Default Jika Local Storage Kosong
+        const defaultStunting = [
+            { desa: "Lapodi", prevalensi: 34.4, status: "Prioritas Utama" },
+            { desa: "Saragi", prevalensi: 32.9, status: "Prioritas Utama" },
+            { desa: "Warinta", prevalensi: 31.9, status: "Prioritas Utama" },
+            { desa: "Mantowu", prevalensi: 26.1, status: "Waspada" },
+            { desa: "Wakoko", prevalensi: 25.6, status: "Waspada" },
+            { desa: "Wasaga", prevalensi: 23.0, status: "Waspada" },
+            { desa: "Winning", prevalensi: 21.9, status: "Waspada" },
+            { desa: "Kabawakole", prevalensi: 21.8, status: "Waspada" },
+            { desa: "Kaongkeongkea", prevalensi: 21.3, status: "Waspada" },
+            { desa: "Kancinaa", prevalensi: 20.3, status: "Waspada" },
+            { desa: "Waangguanggu", prevalensi: 18.7, status: "Aman" },
+            { desa: "Kombeli", prevalensi: 17.5, status: "Aman" },
+            { desa: "Dongkala", prevalensi: 16.2, status: "Aman" }
+        ];
+
+        const defaultRisiko = [
+            { desa: "Kel. Takimpo", sanitasi: 45, air: 82.0, polaAsuh: "Perlu Edukasi", intervensi: "Sudah (BOK)" },
+            { desa: "Desa Laburunci", sanitasi: 12, air: 95.0, polaAsuh: "Baik", intervensi: "Sudah (BOK)" },
+            { desa: "Desa Sampuabalo", sanitasi: 68, air: 64.0, polaAsuh: "Perhatian Khusus", intervensi: "Proses (Provinsi)" },
+            { desa: "Kel. Pasarwajo", sanitasi: 5, air: 98.0, polaAsuh: "Baik", intervensi: "Sudah (Dana Kelurahan)" },
+            { desa: "Desa Megabahari", sanitasi: 28, air: 78.0, polaAsuh: "Perlu Edukasi", intervensi: "Sudah (BOK)" },
+            { desa: "Desa Waangguanggu", sanitasi: 35, air: 80.0, polaAsuh: "Perlu Edukasi", intervensi: "Sudah (Dana Desa)" },
+            { desa: "Desa Lapodi", sanitasi: 40, air: 70.0, polaAsuh: "Perhatian Khusus", intervensi: "Belum" },
+            { desa: "Desa Saragi", sanitasi: 42, air: 72.0, polaAsuh: "Perhatian Khusus", intervensi: "Belum" },
+            { desa: "Desa Warinta", sanitasi: 38, air: 75.0, polaAsuh: "Perlu Edukasi", intervensi: "Proses (Provinsi)" }
+        ];
+
+        const defaultWilayah = [
+            { desa: "Kel. Takimpo", penduduk: 2134, posyandu: 4, pemimpin: "Bpk. La Ode H. Alimin", statusMap: "Terpetakan" },
+            { desa: "Desa Lapodi", penduduk: 1245, posyandu: 2, pemimpin: "Bpk. La Ode H.", statusMap: "Terpetakan" },
+            { desa: "Desa Saragi", penduduk: 980, posyandu: 1, pemimpin: "Bpk. Sudirman", statusMap: "Terpetakan" },
+            { desa: "Desa Warinta", penduduk: 1512, posyandu: 2, pemimpin: "Bpk. Rahman", statusMap: "Terpetakan" },
+            { desa: "Desa Mantowu", penduduk: 1102, posyandu: 1, pemimpin: "Ibu Nurhayati", statusMap: "Terpetakan" },
+            { desa: "Kel. Wakoko", penduduk: 2140, posyandu: 3, pemimpin: "Bpk. Arifin", statusMap: "Terpetakan" },
+            { desa: "Kel. Wasaga", penduduk: 1845, posyandu: 3, pemimpin: "Ibu Wa Ode Rosdiana", statusMap: "Terpetakan" },
+            { desa: "Kel. Kombeli", penduduk: 3210, posyandu: 5, pemimpin: "Bpk. Syarifuddin", statusMap: "Terpetakan" },
+            { desa: "Kel. Pasarwajo", penduduk: 4125, posyandu: 6, pemimpin: "Bpk. La Ode Mustafa", statusMap: "Terpetakan" },
+            { desa: "Desa Banabungi", penduduk: 1750, posyandu: 2, pemimpin: "Bpk. Muhammad Nur", statusMap: "Terpetakan" },
+            { desa: "Desa Laburunci", penduduk: 1420, posyandu: 2, pemimpin: "Bpk. Hardianto", statusMap: "Terpetakan" },
+            { desa: "Desa Waangguanggu", penduduk: 850, posyandu: 1, pemimpin: "Bpk. Hasanuddin", statusMap: "Belum" },
+            { desa: "Desa Kancinaa", penduduk: 1315, posyandu: 2, pemimpin: "Bpk. Rustam", statusMap: "Belum" },
+            { desa: "Desa Winning", penduduk: 994, posyandu: 1, pemimpin: "Bpk. Suhardi", statusMap: "Terpetakan" },
+            { desa: "Desa Kabawakole", penduduk: 1150, posyandu: 2, pemimpin: "Bpk. Ridwan", statusMap: "Belum" }
+        ];
+
+        // Memuat database dari Local Storage, jika tidak ada isikan default
+        let databaseStunting = JSON.parse(localStorage.getItem('databaseStunting')) || defaultStunting;
+        let databaseRisiko = JSON.parse(localStorage.getItem('databaseRisiko')) || defaultRisiko;
+        let databaseWilayah = JSON.parse(localStorage.getItem('databaseWilayah')) || defaultWilayah;
+
+        // Pastikan tersimpan kembali jika baru pertama kali dimuat
+        if(!localStorage.getItem('databaseStunting')) localStorage.setItem('databaseStunting', JSON.stringify(databaseStunting));
+        if(!localStorage.getItem('databaseRisiko')) localStorage.setItem('databaseRisiko', JSON.stringify(databaseRisiko));
+        if(!localStorage.getItem('databaseWilayah')) localStorage.setItem('databaseWilayah', JSON.stringify(databaseWilayah));
+
+        // 3. Menghitung Data Statistik Real-Time
+        function hitungStatistik() {
+            // A. Total Wilayah Administratif
+            document.getElementById('statTotalWilayah').textContent = databaseWilayah.length;
+
+            // B. Rata-Rata Prevalensi Stunting
+            if (databaseStunting.length > 0) {
+                const totalPrevalensi = databaseStunting.reduce((acc, curr) => acc + parseFloat(curr.prevalensi), 0);
+                const rataRata = (totalPrevalensi / databaseStunting.length).toFixed(1);
+                document.getElementById('statPrevalensi').textContent = `${rataRata}%`;
+            } else {
+                document.getElementById('statPrevalensi').textContent = "0%";
+            }
+
+            // C. Total Faktor Risiko (Jumlah KK Ber-Sanitasi Buruk)
+            const totalSanitasiBuruk = databaseRisiko.reduce((acc, curr) => acc + parseInt(curr.sanitasi || 0), 0);
+            document.getElementById('statFaktorRisiko').textContent = `${totalSanitasiBuruk.toLocaleString('id-ID')} KK`;
+
+            // D. Total Desa Prioritas Utama
+            const desaPrioritas = databaseStunting.filter(item => item.status === "Prioritas Utama").length;
+            document.getElementById('statPrioritas').textContent = desaPrioritas;
+        }
+
+        // 4. Render Urutan Wilayah Prioritas Kerawanan
+        function renderPrioritasList() {
+            const container = document.getElementById('prioritasList');
+            container.innerHTML = '';
+
+            // Saring dan urutkan desa berdasarkan tingkat prevalensi tertinggi
+            const sortedData = [...databaseStunting].sort((a, b) => b.prevalensi - a.prevalensi);
+
+            sortedData.forEach((item, index) => {
+                let badgeStyle = "text-emerald-700 bg-emerald-50 border border-emerald-200";
+                if (item.status === "Prioritas Utama") {
+                    badgeStyle = "text-red-700 bg-red-50 border border-red-200";
+                } else if (item.status === "Waspada") {
+                    badgeStyle = "text-amber-700 bg-amber-50 border border-amber-200";
+                }
+
+                container.innerHTML += `
+                    <div class="p-3 border border-slate-100 rounded-xl bg-slate-50/60 hover:bg-slate-50 transition flex justify-between items-center text-xs">
+                        <div>
+                            <p class="font-bold text-slate-800">${index + 1}. ${item.desa}</p>
+                            <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Prevalensi: <span class="text-slate-700">${item.prevalensi}%</span></p>
+                        </div>
+                        <span class="${badgeStyle} px-2.5 py-0.5 rounded-full font-bold text-[9px] uppercase tracking-wide">
+                            ${item.status}
+                        </span>
+                    </div>
+                `;
+            });
+        }
+
+        // 5. Inisialisasi Peta Geografis Interaktif (Leaflet.js)
+        let map;
+        function inisialisasiPeta() {
+            // Mengatur zoom ke wilayah Kecamatan Pasarwajo, Buton
+            map = L.map('dashboardMap').setView([-5.45, 122.81], 11.5);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Letakkan marker lingkaran untuk tiap wilayah dari database stunting
+            databaseStunting.forEach(item => {
+                const koordinat = koordinatDesa[item.desa];
+                if (koordinat) {
+                    let mapColor = "#10b981"; // Hijau
+                    if (item.status === "Prioritas Utama") {
+                        mapColor = "#ef4444"; // Merah
+                    } else if (item.status === "Waspada") {
+                        mapColor = "#f59e0b"; // Kuning
+                    }
+
+                    // Buat Circle Marker interaktif
+                    const marker = L.circleMarker(koordinat, {
+                        radius: 12,
+                        fillColor: mapColor,
+                        color: "#ffffff",
+                        weight: 2,
+                        fillOpacity: 0.85
+                    }).addTo(map);
+
+                    // Buat informasi jendela interaktif saat marker diklik
+                    marker.bindPopup(`
+                        <div class="p-1">
+                            <h4 class="font-bold text-slate-900 text-sm">Desa/Kel. ${item.desa}</h4>
+                            <p class="text-xs text-slate-600 mt-1">Prevalensi Stunting: <b class="text-slate-950">${item.prevalensi}%</b></p>
+                            <p class="text-xs text-slate-600">Status Kerawanan: <span class="font-bold" style="color:${mapColor}">${item.status}</span></p>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // 6. Inisialisasi Grafik Batang Dinamis (Chart.js)
+        function inisialisasiGrafik() {
+            const ctx = document.getElementById('stuntingChart').getContext('2d');
+            
+            // Ambil data stunting yang diurutkan untuk grafik
+            const sortedChartData = [...databaseStunting].sort((a, b) => b.prevalensi - a.prevalensi);
+            const labelDesa = sortedChartData.map(item => item.desa);
+            const angkaPrevalensi = sortedChartData.map(item => item.prevalensi);
+            const warnaGrafik = sortedChartData.map(item => {
+                if (item.status === "Prioritas Utama") return 'rgba(239, 68, 68, 0.8)';
+                if (item.status === "Waspada") return 'rgba(245, 158, 11, 0.8)';
+                return 'rgba(16, 185, 129, 0.8)';
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labelDesa,
+                    datasets: [{
+                        label: 'Prevalensi Kasus (%)',
+                        data: angkaPrevalensi,
+                        backgroundColor: warnaGrafik,
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Persentase (%)', font: { weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Jalankan semua render dinamis saat halaman berhasil dimuat
+        window.onload = function() {
+            hitungStatistik();
+            renderPrioritasList();
+            inisialisasiPeta();
+            inisialisasiGrafik();
+        };
+    </script>
+</body>
+</html>

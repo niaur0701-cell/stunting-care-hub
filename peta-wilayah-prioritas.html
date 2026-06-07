@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peta Wilayah Prioritas - SIG Pasarwajo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Leaflet.js CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #petaPrioritas { height: 480px; width: 100%; }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen">
+
+    <!-- NAVBAR -->
+    <header class="w-full bg-slate-900 text-white shadow-md border-b-4 border-red-600">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold tracking-wider text-red-400">SIG STUNTING PASARWAJO</h1>
+                <p class="text-xs text-slate-400 uppercase font-semibold">Pemetaan Prioritas Intervensi Gizi 2024/2026</p>
+            </div>
+            <a href="dashboard.html" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wide transition shadow">
+                ← Kembali ke Dashboard
+            </a>
+        </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- KOLOM KIRI: DAFTAR PRIORITAS -->
+        <aside class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+                <h2 class="text-sm font-bold uppercase text-slate-800 tracking-wider mb-4 border-b pb-2">
+                    Desa Target Intervensi Utama
+                </h2>
+                <div class="space-y-3 text-xs">
+                    <div class="p-3 bg-red-50 border border-red-200 rounded-xl">
+                        <p class="font-bold text-red-800">1. Desa Lapodi</p>
+                        <p class="text-slate-600 mt-1">Prevalensi: 34,4% (Darurat)</p>
+                        <span class="inline-block mt-2 bg-red-600 text-white font-bold px-2 py-0.5 rounded text-[9px] uppercase">Rekomendasi: PMT Lokal & Sanitasi</span>
+                    </div>
+                    <div class="p-3 bg-red-50 border border-red-200 rounded-xl">
+                        <p class="font-bold text-red-800">2. Desa Saragi</p>
+                        <p class="text-slate-600 mt-1">Prevalensi: 32,9% (Darurat)</p>
+                        <span class="inline-block mt-2 bg-red-600 text-white font-bold px-2 py-0.5 rounded text-[9px] uppercase">Rekomendasi: WC Sehat</span>
+                    </div>
+                    <div class="p-3 bg-red-50 border border-red-200 rounded-xl">
+                        <p class="font-bold text-red-800">3. Desa Warinta</p>
+                        <p class="text-slate-600 mt-1">Prevalensi: 31,9% (Darurat)</p>
+                        <span class="inline-block mt-2 bg-red-600 text-white font-bold px-2 py-0.5 rounded text-[9px] uppercase">Rekomendasi: PMT Serentak</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- KOLOM KANAN: MAPS ZONASI RADIUS (KOLOM 2-3) -->
+        <section class="lg:col-span-2 bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+            <div class="p-6 bg-slate-50 border-b border-slate-200">
+                <h3 class="text-sm font-bold uppercase text-slate-700 tracking-wider">
+                    Peta Zonasi Radius Kerawanan
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">Area ber-radius merah menunjukkan episentrum prioritas tinggi penanganan darurat gizi buruk.</p>
+            </div>
+
+            <!-- Wadah Peta Leaflet -->
+            <div id="petaPrioritas" class="relative z-10"></div>
+        </section>
+
+    </main>
+
+    <!-- LOGIK SIG PRIORITAS (RADIUS MAPS) -->
+    <script>
+        // Set Center ke Pasarwajo
+        var map = L.map('petaPrioritas').setView([-5.45, 122.81], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy;contributors'
+        }).addTo(map);
+
+        // Titik Prioritas Utama (Lapodi, Saragi, Warinta)
+        var prioritasDesa = [
+            { nama: "Lapodi", lat: -5.424, lng: 122.825, prevalensi: 34.4 },
+            { nama: "Saragi", lat: -5.445, lng: 122.815, prevalensi: 32.9 },
+            { nama: "Warinta", lat: -5.465, lng: 122.785, prevalensi: 31.9 }
+        ];
+
+        prioritasDesa.forEach(function(desa) {
+            // Marker Pin Merah Utama
+            var marker = L.marker([desa.lat, desa.lng]).addTo(map);
+            marker.bindPopup(`<b class="text-sm font-bold">Desa ${desa.nama}</b><br><span class="text-xs">Zona Merah: Prevalensi ${desa.prevalensi}%</span>`);
+
+            // Tambahkan Radius Ring (Aura Merah Terlarang/Darurat)
+            L.circle([desa.lat, desa.lng], {
+                color: 'red',
+                fillColor: '#f87171',
+                fillOpacity: 0.35,
+                radius: 1200 // radius 1,2 kilometer dari titik episentrum
+            }).addTo(map);
+        });
+    </script>
+</body>
+</html>

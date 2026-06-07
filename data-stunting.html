@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Stunting - SIG Pasarwajo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Animasi transisi halus untuk modal */
+        .fade-in {
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen flex flex-col justify-between">
+
+    <div>
+        <!-- ATAS: NAVBAR UTAMA -->
+        <header class="w-full bg-slate-900 text-white shadow-md border-b-4 border-blue-600">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl font-bold tracking-wider text-blue-400">SIG STUNTING PASARWAJO</h1>
+                    <p class="text-xs text-slate-400 uppercase font-semibold">Halaman Manajemen Data Stunting</p>
+                </div>
+                <!-- Tombol Kembali ke Dashboard Utama -->
+                <a href="dashboard.html" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wide transition shadow flex items-center gap-1.5">
+                    <span>←</span> Kembali ke Dashboard
+                </a>
+            </div>
+        </header>
+
+        <!-- UTAMA: KONTEN TABEL DATA -->
+        <main class="max-w-7xl mx-auto px-6 py-8 w-full">
+            
+            <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                <!-- Header di atas Tabel -->
+                <div class="p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Tabel Prevalensi Stunting Menurut Desa/Kelurahan</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Data Gerakan Pengukuran Serentak Tahun 2025</p>
+                    </div>
+                    <!-- Tombol Tambah Data Baru (Membuka Modal) -->
+                    <button onclick="bukaModalTambah()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl uppercase tracking-wider transition shadow cursor-pointer text-center">
+                        + Tambah Data Baru
+                    </button>
+                </div>
+
+                <!-- Area Tabel Data Dinamis -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 uppercase text-xs font-bold tracking-wider border-b border-slate-200">
+                                <th class="p-4 w-16 text-center">No</th>
+                                <th class="p-4">Desa / Kelurahan</th>
+                                <th class="p-4 text-center">Prevalensi Stunting (%)</th>
+                                <th class="p-4 text-center">Status Wilayah</th>
+                                <th class="p-4 text-center">Aksi Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelBody" class="divide-y divide-slate-200 text-sm text-slate-700">
+                            <!-- Data akan diisi secara dinamis menggunakan JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Info Bar & Pagination Bawah -->
+                <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-500">
+                    <span id="infoTotalData" class="text-slate-500">Menampilkan 0 Desa/Kelurahan</span>
+                    
+                    <!-- Navigasi Halaman (Pagination) Rata Kanan -->
+                    <div class="flex items-center space-x-1" id="paginationControls">
+                        <!-- Tombol Prev, Angka 1, 2, 3, dan Next akan dibuat dinamis melalui JS -->
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- BAWAH: FOOTER -->
+    <footer class="w-full text-center py-4 text-slate-500 text-xs bg-slate-200/50 border-t border-slate-200 mt-8">
+        &copy; 2025 SIG Stunting Kabupaten Buton. All rights reserved.
+    </footer>
+
+    <!-- MODAL POP-UP 1: FORM TAMBAH & EDIT DATA -->
+    <div id="modalForm" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 fade-in">
+            <!-- Header Modal -->
+            <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
+                <h3 id="modalTitle" class="font-bold text-base tracking-wide">Tambah Data Stunting (2025)</h3>
+                <button onclick="tutupModal()" class="text-slate-400 hover:text-white text-xl font-bold cursor-pointer">&times;</button>
+            </div>
+            <!-- Form Modal -->
+            <form id="formData" onsubmit="simpanData(event)" class="p-6 space-y-4">
+                <!-- Input ID Hidden (Untuk penanda Edit) -->
+                <input type="hidden" id="editIndex">
+
+                <!-- Input Nama Desa -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Desa / Kelurahan</label>
+                    <input type="text" id="inputDesa" required placeholder="Contoh: Lapodi" 
+                           class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                </div>
+
+                <!-- Input Prevalensi -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Prevalensi Stunting (%)</label>
+                    <input type="number" step="0.1" id="inputPrevalensi" required placeholder="Contoh: 34.4" 
+                           class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                </div>
+
+                <!-- Input Status Wilayah -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Status Wilayah</label>
+                    <select id="inputStatus" required 
+                            class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                        <option value="Prioritas Utama">Prioritas Utama</option>
+                        <option value="Waspada">Waspada</option>
+                        <option value="Aman">Aman</option>
+                    </select>
+                </div>
+
+                <!-- Tombol Submit / Cancel -->
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer shadow">
+                        Simpan Data
+                    </button>
+                    <button type="button" onclick="tutupModal()" class="px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POP-UP 2: KONFIRMASI HAPUS KUSTOM -->
+    <div id="modalHapus" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-200 p-6 text-center fade-in">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Hapus Data Desa?</h3>
+            <p class="text-sm text-slate-500 mb-6">Tindakan ini tidak dapat dibatalkan. Data desa <span id="namaDesaHapus" class="font-semibold text-slate-800"></span> akan terhapus secara permanen.</p>
+            
+            <div class="flex gap-3">
+                <button onclick="eksekusiHapus()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer shadow">
+                    Ya, Hapus
+                </button>
+                <button onclick="tutupModalHapus()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIK JAVASCRIPT CRUD, LOCAL STORAGE & PAGINATION -->
+    <script>
+        // 1. Data Riil Kabupaten Buton (Kecamatan Pasarwajo) Konteks 2025
+        const dataAwalDefault = [
+            { desa: "Lapodi", prevalensi: 34.4, status: "Prioritas Utama" },
+            { desa: "Saragi", prevalensi: 32.9, status: "Prioritas Utama" },
+            { desa: "Warinta", prevalensi: 31.9, status: "Prioritas Utama" },
+            { desa: "Mantowu", prevalensi: 26.1, status: "Waspada" },
+            { desa: "Wakoko", prevalensi: 25.6, status: "Waspada" },
+            { desa: "Wasaga", prevalensi: 23.0, status: "Waspada" },
+            { desa: "Winning", prevalensi: 21.9, status: "Waspada" },
+            { desa: "Kabawakole", prevalensi: 21.8, status: "Waspada" },
+            { desa: "Kaongkeongkea", prevalensi: 21.3, status: "Waspada" },
+            { desa: "Kancinaa", prevalensi: 20.3, status: "Waspada" },
+            { desa: "Waangguanggu", prevalensi: 18.7, status: "Aman" },
+            { desa: "Kombeli", prevalensi: 17.5, status: "Aman" },
+            { desa: "Dongkala", prevalensi: 16.2, status: "Aman" }
+        ];
+
+        // Memuat database dari Local Storage, jika tidak ada pakai data default
+        let databaseStunting = JSON.parse(localStorage.getItem('databaseStunting'));
+        if (!databaseStunting) {
+            databaseStunting = dataAwalDefault;
+            localStorage.setItem('databaseStunting', JSON.stringify(databaseStunting));
+        }
+
+        // Variabel Pagination & Hapus
+        let currentPage = 1;
+        const itemsPerPage = 5;
+        let indexGlobalHapus = null;
+
+        // 2. Fungsi untuk Render / Menampilkan Tabel Data dengan Pagination
+        function tampilkanTabel() {
+            const tabelBody = document.getElementById('tabelBody');
+            tabelBody.innerHTML = ''; 
+
+            // Hitung indeks data yang akan diambil sesuai halaman aktif
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const dataHalamanIni = databaseStunting.slice(startIndex, endIndex);
+
+            dataHalamanIni.forEach((item, indexPage) => {
+                // Hitung indeks asli di dalam database global
+                const indexGlobal = startIndex + indexPage;
+
+                // Tentukan warna status badges
+                let badgeClass = "bg-emerald-100 text-emerald-700";
+                let textClass = "text-emerald-600";
+                if (item.status === "Prioritas Utama") {
+                    badgeClass = "bg-red-100 text-red-700";
+                    textClass = "text-red-600";
+                } else if (item.status === "Waspada") {
+                    badgeClass = "bg-amber-100 text-amber-700";
+                    textClass = "text-amber-600";
+                }
+
+                const barisHtml = `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 text-center font-medium text-slate-400">${indexGlobal + 1}</td>
+                        <td class="p-4 font-semibold text-slate-900">${item.desa}</td>
+                        <td class="p-4 text-center font-bold ${textClass}">${item.prevalensi}%</td>
+                        <td class="p-4 text-center">
+                            <span class="${badgeClass} px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                                ${item.status}
+                            </span>
+                        </td>
+                        <td class="p-4 text-center space-x-2">
+                            <button onclick="bukaModalEdit(${indexGlobal})" class="text-blue-600 hover:text-blue-800 font-bold text-xs cursor-pointer bg-transparent border-0">Edit</button>
+                            <span class="text-slate-300">|</span>
+                            <button onclick="mintaKonfirmasiHapus(${indexGlobal})" class="text-red-600 hover:text-red-800 font-bold text-xs cursor-pointer bg-transparent border-0">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+                tabelBody.innerHTML += barisHtml;
+            });
+
+            // Update info total desa di bawah tabel
+            const totalData = databaseStunting.length;
+            const rangeAwal = totalData === 0 ? 0 : startIndex + 1;
+            const rangeAkhir = endIndex > totalData ? totalData : endIndex;
+            document.getElementById('infoTotalData').textContent = `Menampilkan ${rangeAwal}-${rangeAkhir} dari ${totalData} Desa/Kelurahan`;
+
+            renderPaginationControls();
+        }
+
+        // 3. Fungsi Render Tombol Navigasi Halaman (Pagination) 1, 2, 3, Next
+        function renderPaginationControls() {
+            const paginationControls = document.getElementById('paginationControls');
+            paginationControls.innerHTML = '';
+
+            const totalPages = Math.ceil(databaseStunting.length / itemsPerPage);
+            if (totalPages <= 1) return; // Jika hanya ada 1 halaman, sembunyikan kontrol navigasi
+
+            // Tombol PREV (Hanya muncul aktif jika halaman aktif bukan halaman pertama)
+            const prevDisabled = currentPage === 1;
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Prev';
+            prevButton.disabled = prevDisabled;
+            prevButton.className = `px-3 py-1.5 border rounded-lg transition text-xs font-bold cursor-pointer ${
+                prevDisabled ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-600 hover:bg-slate-100'
+            }`;
+            prevButton.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    tampilkanTabel();
+                }
+            };
+            paginationControls.appendChild(prevButton);
+
+            // Tombol Angka Halaman (Dibatasi maksimal menampilkan angka 1, 2, 3 secara dinamis)
+            const maxVisiblePages = 3;
+            let startPage = 1;
+            let endPage = Math.min(totalPages, maxVisiblePages);
+
+            // Menyesuaikan kisaran halaman dinamis agar tetap memunculkan kisaran 1, 2, 3
+            if (currentPage > 2) {
+                startPage = Math.min(currentPage - 1, totalPages - maxVisiblePages + 1);
+                if (startPage < 1) startPage = 1;
+                endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const isActive = currentPage === i;
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = `px-3.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition duration-150 ${
+                    isActive ? 'bg-blue-600 text-white shadow-md' : 'border border-slate-300 text-slate-600 hover:bg-slate-100'
+                }`;
+                pageButton.onclick = () => {
+                    currentPage = i;
+                    tampilkanTabel();
+                };
+                paginationControls.appendChild(pageButton);
+            }
+
+            // Tombol NEXT (Hanya aktif jika bukan halaman terakhir)
+            const nextDisabled = currentPage === totalPages;
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Next';
+            nextButton.disabled = nextDisabled;
+            nextButton.className = `px-3 py-1.5 border rounded-lg transition text-xs font-bold cursor-pointer ${
+                nextDisabled ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-600 hover:bg-slate-100'
+            }`;
+            nextButton.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    tampilkanTabel();
+                }
+            };
+            paginationControls.appendChild(nextButton);
+        }
+
+        // 4. Fungsi Tambah Data
+        function bukaModalTambah() {
+            document.getElementById('modalTitle').textContent = "Tambah Data Stunting Baru (2025)";
+            document.getElementById('formData').reset();
+            document.getElementById('editIndex').value = ""; // Kosongkan ID edit
+            document.getElementById('modalForm').classList.remove('hidden');
+        }
+
+        // 5. Fungsi Edit Data
+        function bukaModalEdit(indexGlobal) {
+            const dataSelected = databaseStunting[indexGlobal];
+            document.getElementById('modalTitle').textContent = "Edit Data Stunting Desa (2025)";
+            document.getElementById('editIndex').value = indexGlobal; // Set ID yang sedang diedit
+            document.getElementById('inputDesa').value = dataSelected.desa;
+            document.getElementById('inputPrevalensi').value = dataSelected.prevalensi;
+            document.getElementById('inputStatus').value = dataSelected.status;
+            document.getElementById('modalForm').classList.remove('hidden');
+        }
+
+        // 6. Fungsi Tutup Modal Form
+        function tutupModal() {
+            document.getElementById('modalForm').classList.add('hidden');
+        }
+
+        // 7. Fungsi Simpan (Tambah Baru ATAU Update Edit)
+        function simpanData(event) {
+            event.preventDefault(); 
+
+            const indexToEdit = document.getElementById('editIndex').value;
+            const desaVal = document.getElementById('inputDesa').value;
+            const prevalensiVal = parseFloat(document.getElementById('inputPrevalensi').value);
+            const statusVal = document.getElementById('inputStatus').value;
+
+            const objekData = { desa: desaVal, prevalensi: prevalensiVal, status: statusVal };
+
+            if (indexToEdit === "") {
+                // TAMBAH BARU
+                databaseStunting.push(objekData);
+                // Langsung lompat ke halaman terakhir agar data baru terlihat
+                currentPage = Math.ceil(databaseStunting.length / itemsPerPage);
+            } else {
+                // UPDATE EDIT DATA
+                databaseStunting[indexToEdit] = objekData;
+            }
+
+            // Simpan ke Local Storage & render ulang tabel
+            localStorage.setItem('databaseStunting', JSON.stringify(databaseStunting));
+            tampilkanTabel();
+            tutupModal();
+        }
+
+        // 8. Fungsi Minta Konfirmasi Hapus (Custom Modal)
+        function mintaKonfirmasiHapus(indexGlobal) {
+            indexGlobalHapus = indexGlobal;
+            const namaDesa = databaseStunting[indexGlobal].desa;
+            document.getElementById('namaDesaHapus').textContent = namaDesa;
+            document.getElementById('modalHapus').classList.remove('hidden');
+        }
+
+        // 9. Fungsi Tutup Modal Hapus
+        function tutupModalHapus() {
+            document.getElementById('modalHapus').classList.add('hidden');
+            indexGlobalHapus = null;
+        }
+
+        // 10. Fungsi Eksekusi Hapus dari Database
+        function eksekusiHapus() {
+            if (indexGlobalHapus !== null) {
+                databaseStunting.splice(indexGlobalHapus, 1); 
+                localStorage.setItem('databaseStunting', JSON.stringify(databaseStunting)); 
+
+                // Perbaiki posisi halaman jika data di halaman aktif habis
+                const totalPages = Math.ceil(databaseStunting.length / itemsPerPage);
+                if (currentPage > totalPages && currentPage > 1) {
+                    currentPage = totalPages;
+                }
+
+                tampilkanTabel();
+                tutupModalHapus();
+            }
+        }
+
+        // Jalankan render pertama kali saat halaman dibuka
+        tampilkanTabel();
+    </script>
+
+</body>
+</html>

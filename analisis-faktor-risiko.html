@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Faktor Risiko - SIG Pasarwajo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen">
+
+    <!-- NAVBAR -->
+    <header class="w-full bg-slate-900 text-white shadow-md border-b-4 border-indigo-600">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold tracking-wider text-indigo-400">SIG STUNTING PASARWAJO</h1>
+                <p class="text-xs text-slate-400 uppercase font-semibold">Analisis Korelasi Multivariabel</p>
+            </div>
+            <a href="dashboard.html" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wide transition shadow">
+                ← Kembali ke Dashboard
+            </a>
+        </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        
+        <!-- CARD ANALISIS -->
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-6">
+            <div class="mb-6">
+                <h2 class="text-lg font-bold text-slate-800">Analisis Korelasi: Stunting vs Sanitasi Buruk</h2>
+                <p class="text-xs text-slate-500">Melihat hubungan spasial antara buruknya sanitasi lingkungan (KK tanpa jamban layak) dengan prevalensi stunting desa</p>
+            </div>
+
+            <!-- Area Grafik Ganda (Dual Axis) -->
+            <div class="w-full h-96">
+                <canvas id="grafikKorelasi"></canvas>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Box Insight Medis/Sanitasi -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+                <h3 class="font-bold text-slate-800 text-sm uppercase mb-3 border-b pb-2">Kesimpulan Analisis Data</h3>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Berdasarkan visualisasi grafik di atas, terdapat kecenderungan **korelasi positif yang kuat** antara tingkat sanitasi buruk (bar kuning) dengan tingginya persentase kasus stunting (garis merah). 
+                    <br><br>
+                    Desa **Lapodi** dan **Saragi** yang mencatat tingkat sanitasi terburuk (masing-masing di atas 40 KK bermasalah) secara linier juga menduduki posisi prevalensi stunting tertinggi di Kecamatan Pasarwajo (di atas 32%).
+                </p>
+            </div>
+
+            <!-- Rekomendasi Intervensi -->
+            <div class="bg-indigo-900 text-indigo-100 p-6 rounded-2xl shadow-md">
+                <h3 class="font-bold text-sm uppercase mb-3 border-b border-indigo-700 pb-2">Rekomendasi Kebijakan (Aksi Gizi)</h3>
+                <ul class="text-xs space-y-3 leading-relaxed">
+                    <li class="flex items-start">
+                        <span class="mr-2 text-indigo-400">✔</span>
+                        <span>Prioritaskan pembangunan sanitasi komunal / WC sehat keluarga sehat di Desa Lapodi, Saragi, dan Warinta melalui alokasi Dana Desa 2026.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="mr-2 text-indigo-400">✔</span>
+                        <span>Kolaborasikan program PMT Lokal dari Dinas Kesehatan Buton bersamaan dengan penyuluhan Perilaku Hidup Bersih dan Sehat (PHBS).</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JS Chart Korelasi -->
+    <script>
+        const ctx = document.getElementById('grafikKorelasi').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Lapodi', 'Saragi', 'Warinta', 'Mantowu', 'Wakoko', 'Wasaga', 'Winning'],
+                datasets: [
+                    {
+                        label: 'KK Sanitasi Buruk (Kiri)',
+                        data: [45, 42, 38, 22, 25, 18, 15],
+                        backgroundColor: 'rgba(245, 158, 11, 0.75)', // Orange/Amber
+                        yAxisID: 'y',
+                        order: 2,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Prevalensi Stunting % (Kanan)',
+                        data: [34.4, 32.9, 31.9, 26.1, 25.6, 23.0, 21.9],
+                        type: 'line',
+                        borderColor: '#ef4444', // Red
+                        backgroundColor: '#ef4444',
+                        borderWidth: 3,
+                        yAxisID: 'y1',
+                        order: 1,
+                        tension: 0.15
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Jumlah KK', font: { size: 11, weight: 'bold' } }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: 'Prevalensi (%)', font: { size: 11, weight: 'bold' } }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peta Sebaran Stunting - SIG Pasarwajo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Leaflet.js (Pustaka Peta Digital) CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #petaWeb { height: 500px; width: 100%; }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen">
+
+    <!-- NAVBAR -->
+    <header class="w-full bg-slate-900 text-white shadow-md border-b-4 border-emerald-600">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold tracking-wider text-emerald-400">SIG STUNTING PASARWAJO</h1>
+                <p class="text-xs text-slate-400 uppercase font-semibold">Visualisasi Geografis (GIS) Interaktif</p>
+            </div>
+            <a href="dashboard.html" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold px-4 py-2 rounded-lg uppercase tracking-wide transition shadow">
+                ← Kembali ke Dashboard
+            </a>
+        </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="max-w-7xl mx-auto px-6 py-8 space-y-6">
+        
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+            <!-- Peta Header -->
+            <div class="p-6 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">Peta Episentrum Sebaran Stunting</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Peta digital interaktif Kecamatan Pasarwajo (Gunakan Zoom & Klik Marker untuk Detail)</p>
+                </div>
+                <!-- Legenda Ringkas -->
+                <div class="flex gap-4 text-xs font-semibold">
+                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-600 mr-1"></span> Tinggi (>30%)</div>
+                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-amber-500 mr-1"></span> Sedang (20-30%)</div>
+                </div>
+            </div>
+
+            <!-- Wadah Peta Realistis Leaflet.js -->
+            <div id="petaWeb" class="relative z-10"></div>
+        </div>
+
+    </main>
+
+    <!-- LOGIK SIG MAPS -->
+    <script>
+        // Inisialisasi peta Leaflet, diarahkan ke pusat koordinat geografis Kecamatan Pasarwajo, Buton
+        var map = L.map('petaWeb').setView([-5.485, 122.825], 12);
+
+        // Menambahkan basemap OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Data Titik Koordinat Desa-Desa Pasarwajo
+        var dataDesa = [
+            { nama: "Lapodi", lat: -5.424, lng: 122.825, prevalensi: 34.4, status: "Tinggi", color: "red" },
+            { nama: "Saragi", lat: -5.445, lng: 122.815, prevalensi: 32.9, status: "Tinggi", color: "red" },
+            { nama: "Warinta", lat: -5.465, lng: 122.785, prevalensi: 31.9, status: "Tinggi", color: "red" },
+            { nama: "Mantowu", lat: -5.410, lng: 122.830, prevalensi: 26.1, status: "Sedang", color: "orange" },
+            { nama: "Wakoko", lat: -5.495, lng: 122.805, prevalensi: 25.6, status: "Sedang", color: "orange" },
+            { nama: "Wasaga", lat: -5.475, lng: 122.840, prevalensi: 23.0, status: "Sedang", color: "orange" },
+            { nama: "Winning", lat: -5.435, lng: 122.795, prevalensi: 21.9, status: "Sedang", color: "orange" }
+        ];
+
+        // Looping untuk menaruh Circle Marker interaktif pada peta
+        dataDesa.forEach(function(desa) {
+            var marker = L.circleMarker([desa.lat, desa.lng], {
+                radius: 12,
+                fillColor: desa.color === "red" ? "#dc2626" : "#f59e0b",
+                color: "#fff",
+                weight: 2,
+                fillOpacity: 0.8
+            }).addTo(map);
+
+            // Tampilan Popup Informasi saat marker diklik
+            marker.bindPopup(
+                `<div class='p-1'>
+                    <h4 class='font-bold text-slate-800 text-sm'>Desa ${desa.nama}</h4>
+                    <p class='text-xs mt-1 text-slate-600'>Prevalensi: <b class='text-slate-950'>${desa.prevalensi}%</b></p>
+                    <p class='text-xs text-slate-600'>Klasifikasi: <span class='font-bold uppercase ${desa.color === "red" ? "text-red-600" : "text-amber-600"}'>${desa.status}</span></p>
+                 </div>`
+            );
+        });
+    </script>
+</body>
+</html>
